@@ -1,78 +1,29 @@
-// src/Home.js
 import React, { useState } from 'react';
 import Notification from '../Notification';
 
 const Home = () => {
-  const [videoFile, setVideoFile] = useState(null);
   const [responseMessage, setResponseMessage] = useState('');
   const [recognizedPlates, setRecognizedPlates] = useState([]);
   const [violations, setViolations] = useState([]);
 
-  // Handle file selection
-  const handleFileChange = (e) => {
-    if (e.target.files && e.target.files[0]) {
-      setVideoFile(e.target.files[0]);
-    }
-  };
-
-  // Upload the video file to the backend for processing
-  const handleUpload = async () => {
-    if (!videoFile) {
-      alert('Please select a video file first.');
-      return;
-    }
-
-    setResponseMessage('Uploading and processing video...');
-    setRecognizedPlates([]);
-    setViolations([]);
-
-    const formData = new FormData();
-    formData.append('file', videoFile);
-
-    try {
-      const response = await fetch('http://localhost:8000/view_video', {
-        method: 'POST',
-        body: formData,
-      });
-      
-      if (!response.ok) {
-        throw new Error(`Upload failed with status ${response.status}`);
-      }
-
-      const data = await response.json();
-      setResponseMessage(data.message || 'Video processed successfully.');
-      setRecognizedPlates(data.recognized_plates || []);
-      setViolations(data.violations || []);
-    } catch (error) {
-      console.error('Error uploading video:', error);
-      setResponseMessage('Error uploading video. Check console for details.');
-    }
-  };
-
   return (
     <div style={containerStyle}>
-      <Notification />
-      <h1>Parking Detection - Home</h1>
-      
-      {/* Video Upload Section */}
-      <div style={uploadContainerStyle}>
-        <input
-          type="file"
-          accept="video/*"
-          onChange={handleFileChange}
-          style={fileInputStyle}
-        />
-        <button onClick={handleUpload} style={buttonStyle}>
-          Upload &amp; Start Detection
-        </button>
-      </div>
+      {/* Navigation Bar */}
+      <nav style={navStyle}>
+        <h2 style={logoStyle}>Parking Detection</h2>
+        <ul style={navListStyle}>
+          <li><a href="/" style={navItemStyle}>Home</a></li>
+          <li><a href="/about" style={navItemStyle}>About</a></li>
+          <li><a href="/contact" style={navItemStyle}>Contact</a></li>
+        </ul>
+      </nav>
 
-      {/* Response Message */}
-      {responseMessage && (
-        <p style={{ marginTop: '20px', fontWeight: 'bold' }}>
-          {responseMessage}
-        </p>
-      )}
+      {/* Header Section */}
+      <header style={headerStyle}>
+        <h1 style={titleStyle}>Live Parking Detection</h1>
+      </header>
+
+      <Notification />
 
       {/* Live Stream Section */}
       <div style={streamContainerStyle}>
@@ -83,6 +34,13 @@ const Home = () => {
           style={videoStyle}
         />
       </div>
+
+      {/* Response Message */}
+      {responseMessage && (
+        <p style={messageStyle}>
+          {responseMessage}
+        </p>
+      )}
 
       {/* Recognized Plates Section */}
       {recognizedPlates.length > 0 && (
@@ -107,44 +65,93 @@ const Home = () => {
           </ul>
         </div>
       )}
+
+      {/* Footer Section */}
+      <footer style={footerStyle}>
+        <p>© 2025 Parking Detection System. All Rights Reserved.</p>
+      </footer>
     </div>
   );
 };
 
-/* Inline Styles */
+/* Styles */
 const containerStyle = {
-  maxWidth: '600px',
-  margin: '50px auto',
+  width: '100%',
+  minHeight: '100vh',
   fontFamily: 'Arial, sans-serif',
+  textAlign: 'center',
+  display: 'flex',
+  flexDirection: 'column',
+  justifyContent: 'space-between',
 };
 
-const uploadContainerStyle = {
-  marginBottom: '20px',
-};
-
-const fileInputStyle = {
-  marginRight: '10px',
-};
-
-const buttonStyle = {
-  padding: '8px 16px',
+const navStyle = {
+  width: '100%',
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'center',
   backgroundColor: '#333',
-  color: '#fff',
-  border: 'none',
-  cursor: 'pointer',
-  borderRadius: '4px',
+  padding: '15px 20px',
+  color: 'white',
+  position: 'fixed',
+  top: 0,
+  left: 0,
+  zIndex: 1000,
+};
+
+const logoStyle = {
+  margin: 0,
+  fontSize: '24px',
+};
+
+const navListStyle = {
+  listStyle: 'none',
+  display: 'flex',
+  gap: '20px',
+  margin: 0,
+  padding: 0,
+};
+
+const navItemStyle = {
+  color: 'white',
+  textDecoration: 'none',
+  fontSize: '16px',
+};
+
+const headerStyle = {
+  width: '100%',
+  marginTop: '80px', // Offset for fixed navbar
+  padding: '40px 0',
+  backgroundColor: '#105EEA',
+  color: 'white',
+  textAlign: 'center',
+};
+
+const titleStyle = {
+  margin: 0,
+  fontSize: '28px',
 };
 
 const streamContainerStyle = {
   marginTop: '30px',
   textAlign: 'center',
+  width: '90%',
+  maxWidth: '800px',
+  marginLeft: 'auto',
+  marginRight: 'auto',
 };
 
 const videoStyle = {
   width: '100%',
-  maxWidth: '600px',
+  maxWidth: '800px',
   border: '1px solid #ccc',
   borderRadius: '8px',
+};
+
+const messageStyle = {
+  marginTop: '20px',
+  fontWeight: 'bold',
+  color: '#333',
 };
 
 const platesContainerStyle = {
@@ -152,6 +159,11 @@ const platesContainerStyle = {
   backgroundColor: '#f9f9f9',
   padding: '15px',
   borderRadius: '8px',
+  textAlign: 'left',
+  width: '90%',
+  maxWidth: '600px',
+  marginLeft: 'auto',
+  marginRight: 'auto',
 };
 
 const plateItemStyle = {
@@ -159,6 +171,17 @@ const plateItemStyle = {
   margin: '5px 0',
   padding: '8px',
   borderRadius: '4px',
+};
+
+const footerStyle = {
+  width: '100%',
+  marginTop: '40px',
+  padding: '15px',
+  backgroundColor: '#333',
+  color: 'white',
+  textAlign: 'center',
+  position: 'relative',
+  bottom: 0,
 };
 
 export default Home;
