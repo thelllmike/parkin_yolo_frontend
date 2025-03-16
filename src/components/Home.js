@@ -1,100 +1,51 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 
-/**
- * Home component for uploading a video, showing the YOLO detection stream,
- * and displaying notifications/alerts in real-time.
- */
 const Home = () => {
-  // Store selected file in state
   const [videoFile, setVideoFile] = useState(null);
+  const [responseMessage, setResponseMessage] = useState('');
+  const [recognizedPlates, setRecognizedPlates] = useState([]);
 
-  // Store the streaming URL (where your backend provides annotated frames)
-  const [streamUrl, setStreamUrl] = useState('');
-
-  // Store incoming notifications (violation alerts) in an array
-  const [notifications, setNotifications] = useState([]);
-
-  /**
-   * Handle file selection
-   */
   const handleFileChange = (e) => {
     if (e.target.files && e.target.files[0]) {
       setVideoFile(e.target.files[0]);
     }
   };
 
-  /**
-   * Upload the file to the server and get back a stream URL
-   */
   const handleUpload = async () => {
     if (!videoFile) {
       alert('Please select a video file first.');
       return;
     }
 
-    // Prepare form data
+    setResponseMessage('Uploading and processing video...');
+    setRecognizedPlates([]);
+
     const formData = new FormData();
-    formData.append('video', videoFile);
+    formData.append('file', videoFile);
 
     try {
-      // Example POST request to your server
-      // Replace 'http://localhost:5000/upload' with your actual upload endpoint
-      const response = await fetch('http://localhost:5000/upload', {
+      // POST to FastAPI backend at /view_video
+      const response = await fetch('http://localhost:8000/view_video', {
         method: 'POST',
         body: formData,
       });
-
+      
       if (!response.ok) {
-        throw new Error('Upload failed');
+        throw new Error(`Upload failed with status ${response.status}`);
       }
 
-      // Suppose the server returns a JSON containing a streaming URL
-      // e.g. { "streamUrl": "http://localhost:5000/stream/video123" }
       const data = await response.json();
-      setStreamUrl(data.streamUrl);
+      setResponseMessage(data.message || 'Video processed successfully.');
+      setRecognizedPlates(data.recognized_plates || []);
     } catch (error) {
-      console.error('Error uploading file:', error);
-      alert('Failed to upload video.');
+      console.error('Error uploading video:', error);
+      setResponseMessage('Error uploading video. Check console for details.');
     }
   };
 
-  /**
-   * Set up real-time notifications (using WebSockets or SSE)
-   * For demonstration, we’ll use a WebSocket approach.
-   * The server should broadcast violation alerts to this socket.
-   */
-  useEffect(() => {
-    // Replace with your actual WebSocket endpoint
-    const socket = new WebSocket('ws://localhost:5000/notifications');
-
-    // On receiving a message, we assume the server sends JSON like:
-    // { "plate": "XYZ 123", "message": "Violation detected" }
-    socket.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        if (data && data.message) {
-          setNotifications((prev) => [...prev, data.message]);
-        }
-      } catch (err) {
-        console.error('Failed to parse WebSocket message:', err);
-      }
-    };
-
-    socket.onerror = (err) => {
-      console.error('WebSocket error:', err);
-    };
-
-    // Cleanup on unmount
-    return () => {
-      socket.close();
-    };
-  }, []);
-
   return (
     <div style={containerStyle}>
-      <h1>Parking Detection Home</h1>
-
-      {/* File input for video selection */}
+      <h1>Parking Detection - Home</h1>
       <div style={uploadContainerStyle}>
         <input
           type="file"
@@ -107,49 +58,32 @@ const Home = () => {
         </button>
       </div>
 
-      {/* Display the detection stream (assuming the server provides a direct video stream URL) */}
-      {streamUrl && (
-        <div style={videoContainerStyle}>
-          <h2>Live Detection Stream</h2>
-          {/* 
-            If your backend streams MJPEG, you could use <img> with the stream URL.
-            If it's a video endpoint, you can use <video> with controls or autoplay.
-            Adjust as needed for your backend's streaming method.
-          */}
-          <video
-            src={streamUrl}
-            style={videoStyle}
-            controls
-            autoPlay
-            muted
-          />
-        </div>
+      {/* Display response messages */}
+      {responseMessage && (
+        <p style={{ marginTop: '20px', fontWeight: 'bold' }}>{responseMessage}</p>
       )}
 
-      {/* Notification/Alert section */}
-      <div style={alertContainerStyle}>
-        <h2>Violation Alerts</h2>
-        {notifications.length === 0 ? (
-          <p>No violations detected yet.</p>
-        ) : (
+      {/* Display recognized plates (if any) */}
+      {recognizedPlates.length > 0 && (
+        <div style={platesContainerStyle}>
+          <h2>Recognized Plates:</h2>
           <ul>
-            {notifications.map((note, index) => (
-              <li key={index} style={alertItemStyle}>
-                {note}
+            {recognizedPlates.map((plate, idx) => (
+              <li key={idx} style={plateItemStyle}>
+                {plate}
               </li>
             ))}
           </ul>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 };
 
-/* Simple inline styles for demonstration purposes */
+/* Basic inline styling */
 const containerStyle = {
-  maxWidth: '800px',
-  margin: '0 auto',
-  padding: '20px',
+  maxWidth: '600px',
+  margin: '50px auto',
   fontFamily: 'Arial, sans-serif',
 };
 
@@ -170,30 +104,18 @@ const buttonStyle = {
   borderRadius: '4px',
 };
 
-const videoContainerStyle = {
-  marginBottom: '20px',
-  textAlign: 'center',
-};
-
-const videoStyle = {
-  width: '100%',
-  maxWidth: '600px',
-  border: '1px solid #ccc',
-  borderRadius: '4px',
-};
-
-const alertContainerStyle = {
+const platesContainerStyle = {
+  marginTop: '20px',
   backgroundColor: '#f9f9f9',
-  padding: '10px',
-  borderRadius: '4px',
+  padding: '15px',
+  borderRadius: '8px',
 };
 
-const alertItemStyle = {
-  backgroundColor: '#ffe6e6',
-  padding: '8px',
+const plateItemStyle = {
+  backgroundColor: '#eee',
   margin: '5px 0',
+  padding: '8px',
   borderRadius: '4px',
-  color: '#cc0000',
 };
 
 export default Home;
