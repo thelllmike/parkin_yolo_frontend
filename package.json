@@ -22,7 +22,6 @@
   "eslintConfig": {
     "extends": [
       "react-app"
-      
     ]
   },
   "browserslist": {
@@ -38,7 +37,7 @@
     ]
   },
   "devDependencies": {
-    "eslint": "^8.2.0",
+    "eslint": "^7.32.0",
     "eslint-config-react-app": "^6.0.0",
     "eslint-plugin-flowtype": "^5.2.0",
     "eslint-plugin-import": "^2.25.4",
