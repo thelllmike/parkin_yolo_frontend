@@ -28,11 +28,13 @@ const Home = () => {
       {/* Live Stream Section */}
       <div style={streamContainerStyle}>
         <h2>Live Detection Stream</h2>
-        <img 
-          src="http://localhost:8000/video_feed" 
-          alt="Live Stream" 
-          style={videoStyle}
-        />
+        <div style={videoWrapperStyle}>
+          <img
+            src="http://localhost:8000/video_feed"
+            alt="Live Stream"
+            style={videoStyle}
+          />
+        </div>
       </div>
 
       {/* Response Message */}
@@ -120,7 +122,7 @@ const navItemStyle = {
 
 const headerStyle = {
   width: '100%',
-  marginTop: '80px', // Offset for fixed navbar
+  marginTop: '80px',
   padding: '40px 0',
   backgroundColor: '#105EEA',
   color: 'white',
@@ -135,15 +137,18 @@ const titleStyle = {
 const streamContainerStyle = {
   marginTop: '30px',
   textAlign: 'center',
-  width: '90%',
-  maxWidth: '800px',
-  marginLeft: 'auto',
-  marginRight: 'auto',
+  width: '100%',
+};
+
+const videoWrapperStyle = {
+  width: '100%',
+  maxWidth: '300px',
+  margin: '0 auto',
 };
 
 const videoStyle = {
   width: '100%',
-  maxWidth: '800px',
+  height: 'auto',
   border: '1px solid #ccc',
   borderRadius: '8px',
 };
